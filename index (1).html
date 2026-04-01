@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNH — Vendor Dues & Legal Notices Tracker</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;font-size:13px;min-height:100vh}
+  .header{background:#fff;border-bottom:1px solid #e0ddd6;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .header-left h1{font-size:16px;font-weight:600;color:#1a1a1a}
+  .header-left p{font-size:11px;color:#888;margin-top:2px}
+  .export-btn{font-size:11px;padding:6px 12px;border:1px solid #d0cdc6;border-radius:6px;background:#fff;color:#555;cursor:pointer}
+  .export-btn:hover{background:#f5f4f0}
+  .main{max-width:1100px;margin:0 auto;padding:20px 24px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .metric{background:#fff;border:1px solid #e0ddd6;border-radius:10px;padding:14px 16px}
+  .metric-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+  .metric-value{font-size:24px;font-weight:600;line-height:1}
+  .metric-sub{font-size:10px;color:#aaa;margin-top:3px}
+  .section{background:#fff;border:1px solid #e0ddd6;border-radius:12px;overflow:hidden;margin-bottom:16px}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #f0ede8;align-items:center}
+  .filter-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+  .fb{background:transparent;border:1px solid #ddd;border-radius:20px;padding:3px 11px;font-size:11px;cursor:pointer;color:#777;font-family:inherit}
+  .fb:hover{background:#f5f4f0;border-color:#bbb}
+  .fb.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+  .cases{padding:8px 12px 12px}
+  .card{border:1px solid #e8e4de;border-radius:8px;margin-bottom:6px;overflow:hidden;background:#fff}
+  .card.critical{border-left:3px solid #dc3545}
+  .card.high{border-left:3px solid #f59e0b}
+  .card.medium{border-left:3px solid #3b82f6}
+  .card.resolved-card{border-left:3px solid #22c55e;opacity:.7}
+  .card-head{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;cursor:pointer;align-items:start}
+  .card-head:hover{background:#fafaf8}
+  .card-title{font-size:13px;font-weight:500;margin-bottom:4px}
+  .badges{display:flex;gap:4px;flex-wrap:wrap}
+  .b{font-size:10px;padding:2px 7px;border-radius:12px;font-weight:500;white-space:nowrap}
+  .b-open{background:#fef2f2;color:#b91c1c}
+  .b-prog{background:#fffbeb;color:#92400e}
+  .b-esc{background:#fdf4ff;color:#7e22ce}
+  .b-res{background:#f0fdf4;color:#166534}
+  .b-crit{background:#fef2f2;color:#b91c1c}
+  .b-high{background:#fffbeb;color:#92400e}
+  .b-med{background:#eff6ff;color:#1d4ed8}
+  .b-type{background:#f5f4f0;color:#666}
+  .b-src{background:#f9f8f6;color:#aaa;font-size:9px}
+  .card-right{text-align:right}
+  .amount{font-size:14px;font-weight:600;white-space:nowrap}
+  .amount-sub{font-size:10px;color:#aaa;margin-top:1px}
+  .chevron{font-size:10px;color:#bbb;margin-top:4px;display:block}
+  .card-body{display:none;border-top:1px solid #f0ede8;padding:10px 12px}
+  .card-body.open{display:block}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:8px}
+  .info-field label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:1px}
+  .info-field span{font-size:11px;color:#555}
+  .yes{color:#16a34a;font-weight:500}
+  .no{color:#dc2626;font-weight:500}
+  .risk-box{font-size:11px;color:#555;line-height:1.6;background:#fafaf8;border:1px solid #f0ede8;border-radius:6px;padding:8px 10px;margin-bottom:8px}
+  .divider{height:1px;background:#f0ede8;margin:8px 0}
+  .status-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+  .status-row label{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#aaa}
+  .sb{font-size:10px;padding:3px 10px;border-radius:12px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#666;font-family:inherit}
+  .sb:hover{background:#f5f4f0}
+  .sb.ao{background:#fef2f2;color:#b91c1c;border-color:#fca5a5}
+  .sb.ap{background:#fffbeb;color:#92400e;border-color:#fcd34d}
+  .sb.ae{background:#fdf4ff;color:#7e22ce;border-color:#d8b4fe}
+  .sb.ar{background:#f0fdf4;color:#166534;border-color:#86efac}
+  .updates-section{margin-top:8px}
+  .updates-label{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#aaa;margin-bottom:5px}
+  .update-item{font-size:11px;padding:5px 8px;border-left:2px solid #e0ddd6;margin-bottom:3px;color:#555}
+  .update-date{font-size:10px;color:#aaa;margin-bottom:1px}
+  .add-row{display:flex;gap:5px;margin-top:7px}
+  .add-row input{flex:1;font-size:11px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
+  .add-row input:focus{outline:none;border-color:#1a1a1a}
+  .save-btn{font-size:11px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#555;cursor:pointer;white-space:nowrap;font-family:inherit}
+  .save-btn:hover{background:#f5f4f0}
+  .empty{text-align:center;padding:32px;color:#aaa}
+  .footer{text-align:center;padding:20px;font-size:11px;color:#bbb}
+  @media(max-width:600px){.metrics{grid-template-columns:repeat(2,1fr)}.info-grid{grid-template-columns:1fr}.main{padding:12px}}
+  @media print{.add-row,.status-row,.export-btn{display:none}.card-body{display:block!important}}
+</style>
+</head>
+<body>
+
+<style>
+#pw-gate{position:fixed;inset:0;background:#f5f4f0;display:flex;align-items:center;justify-content:center;z-index:9999}
+#pw-box{background:#fff;border:1px solid #e0ddd6;border-radius:16px;padding:40px 48px;width:340px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+#pw-box h2{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#pw-box p{font-size:12px;color:#aaa;margin-bottom:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#pw-input{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:2px;text-align:center}
+#pw-input:focus{border-color:#1a1a1a}
+#pw-btn{width:100%;margin-top:12px;padding:10px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500}
+#pw-btn:hover{background:#333}
+#pw-err{font-size:12px;color:#dc2626;margin-top:10px;display:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#pw-logo{font-size:22px;margin-bottom:16px}
+</style>
+<div id="pw-gate">
+  <div id="pw-box">
+    <div id="pw-logo">🏥</div>
+    <h2>CNH Internal Dashboard</h2>
+    <p>Enter the password to continue</p>
+    <input id="pw-input" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()"/>
+    <button id="pw-btn" onclick="checkPw()">Continue</button>
+    <div id="pw-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+<script>
+(function(){
+  // Check if already authenticated this session
+  if(sessionStorage.getItem('cnh_auth')==='1'){
+    document.addEventListener('DOMContentLoaded',function(){
+      var g=document.getElementById('pw-gate');
+      if(g) g.style.display='none';
+    });
+  }
+})();
+function checkPw(){
+  var input=document.getElementById('pw-input').value;
+  // Simple hash check — password is CNH2026
+  var h=0;for(var i=0;i<input.length;i++){h=((h<<5)-h)+input.charCodeAt(i);h|=0;}
+  if(h===1634309055){
+    sessionStorage.setItem('cnh_auth','1');
+    document.getElementById('pw-gate').style.display='none';
+  } else {
+    document.getElementById('pw-err').style.display='block';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+</script>
+
+<div class="header">
+  <div class="header-left">
+    <h1>CNH — Vendor Dues &amp; Legal Notices</h1>
+    <p>Generated 1 Apr 2026</p>
+  </div>
+  <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+</div>
+<div class="main">
+  <div class="metrics" id="metrics"></div>
+  <div class="section">
+    <div class="filters" id="filters"></div>
+    <div class="cases" id="cases"></div>
+  </div>
+</div>
+<div class="footer">CNH Vendor Dues Tracker · Status changes saved in browser localStorage</div>
+<script>
+const KEY='cnh_dues_v6';
+const CASES=[
+{id:1,vendor:'Sakra World Hospital',type:'Provider — OPD services',amount:'₹35,02,060',amountSub:'₹25,10,581 overdue >60d',urgency:'critical',first:'Jan 2026',last:'28 Mar 2026',revert:false,revertNote:'Sunder committed ₹20L Jan; only ₹2.9L paid Feb. Silent since.',risk:'Last email 28 Mar UNREAD. Largest single provider exposure. Pattern of part-payments and broken commitments. Escalated internally to Sanjay level multiple times.',source:'legal@'},
+{id:2,vendor:'Datar Cancer Genetics (DCGPL)',type:'Lab partner — cancer diagnostics',amount:'₹21,68,020',amountSub:'Dec 2025–Feb 2026 pending; peak was ₹27L',urgency:'critical',first:'Jan 2026',last:'31 Mar 2026',revert:false,revertNote:'Pratik Bhardwaj escalated to Sunder Jan 27. Marsh (Neha Singh) in loop. CNH paid only ₹2L on Jan 30. No response to 31 Mar email addressed to Galveen and Sunder.',risk:'3 months of invoices unpaid. Marsh involved as intermediary for corporate health account — reputational risk with Marsh if not cleared. Balance growing month on month.',source:'mvs@'},
+{id:3,vendor:'Cult Fit (CureFit)',type:'Wellness/fitness platform — session billing',amount:'₹1.35 Cr+',amountSub:'₹45L overdue >180d + ₹90L new invoice Mar 2026',urgency:'critical',first:'Feb 2026',last:'26 Mar 2026',revert:true,revertNote:'Saurabh Kumar acknowledged dues 9 Mar, promised significant chunk by 31 Mar — not delivered. Requested 90-day payment terms — not confirmed.',risk:'₹45L from Invoice #2494690 overdue 180+ days. ₹90L new invoice raised 17 Mar for consumption through Feb 2026. Monthly consumption ₹20L+. Dashboard access revoked; all PPS user access threatened by 31 Mar — deadline passed. CRITICAL: No signed agreement in place per Shubham Jangid (17 Mar). Total FY spend ₹1.7 Cr with no executed contract.',source:'galveen@, saurabh.kumar@'},
+{id:4,vendor:'Shivaami Cloud Services (GCP reseller)',type:'Google Cloud/Workspace — demand notice + suspension',amount:'₹51L+ paid Jan–Mar; balance TBC',amountSub:'Committed ₹23L Mar 2026; ₹8L reimbursement received',urgency:'critical',first:'Feb 2026',last:'27 Mar 2026',revert:true,revertNote:'Sunder paid ₹51L in instalments Jan–Mar. Committed ₹23L by 26 Mar. Pradeep negotiated hold. ₹8,05,603 credit + $50K GCP credit from 1 Mar.',risk:'Formal demand notice. Two service suspension threats (10 Mar, 27 Mar). Legal counsel + debt recovery engaged. GCP and Workspace services at risk. Remaining balance unclear — needs confirmation.',source:'mvs@'},
+{id:5,vendor:'Google Cloud (ABC-Amega Collections)',type:'Cloud infra — US debt collector',amount:'$10,535.41 USD',amountSub:'~₹8.8L',urgency:'critical',first:'12 Mar 2026',last:'17 Mar 2026',revert:false,revertNote:'No CNH response found in any inbox. May be same GCP account as Shivaami — needs cross-check.',risk:'Account placed with American Bureau of Collections. Likely SUSPENDED. No CNH reply. Pay immediately at console.cloud.google.com. Cross-check if same account as Shivaami (case 4).',source:'legal@, accounts@'},
+{id:6,vendor:'Salesforce',type:'CRM/Slack — suspension + collections threat',amount:'₹2,96,298',amountSub:'Invoice #36447564, due 14 Feb 2026',urgency:'critical',first:'3 Feb 2026',last:'10 Mar 2026',revert:true,revertNote:'Siddhesh asked Salesforce to fill vendor reg form. CNH card payment failed in Jan. No confirmed payment.',risk:'Account suspended Feb. Slack downgrade threatened — 90-day message limit, loss of integrations. Third-party collections flagged. Addressed to Galveen directly.',source:'accounts@'},
+{id:7,vendor:'LeadSquared (MarketXpander)',type:'CRM subscription — Sec. 21 Arbitration',amount:'₹9,14,848',amountSub:'As on 24 Nov 2025',urgency:'critical',first:'Nov 2025',last:'8 Jan 2026',revert:true,revertNote:'Shubham Jangid engaged on ledger reco — CNH books ₹4.46L vs LSQ claim ₹9.14L. No settlement reached.',risk:'Formal arbitration filed under Presolv360 ODR. Quantum disputed. Proceedings likely advancing without CNH response.',source:'legal@'},
+{id:8,vendor:'Equence Technologies',type:'IT vendor — Bombay High Court',amount:'TBC — PDF attachment',amountSub:'Notice served 21 Jun 2025; HC suit filed thereafter',urgency:'critical',first:'Jun 2025',last:'22 Jul 2025',revert:true,revertNote:"Galveen forwarded to Sanjay/Sunder/Elwin immediately. Sunder's position: breach is on their side. LexStart (Aishwarya Dubey) engaged Jul 26. Last internal chase 17 Aug — no visible update.",risk:'Hard copy served 21 Jun 2025 by Adv. Chinmay Athalye, CSA Legal Mumbai. Email served 22 Jul to galveen@ directly. Escalated to Bombay HC. LexStart to confirm current case status urgently. Claim quantum in PDF — open notice email in galveen@ inbox to review.',source:'galveen@ (direct)'},
+{id:9,vendor:'Chandra Medical, Bengaluru',type:'Diagnostics/phlebotomy vendor',amount:'₹13,97,778',amountSub:'Per CNH ledger Feb 2025; vendor claims more',urgency:'critical',first:'2022',last:'9 Mar 2026',revert:true,revertNote:'Sanjay replied Jun 2025 promising payment. Told them your money is absolutely secure. Jaykishan did reco early 2025. Still unpaid.',risk:'4-year-old invoices — oldest from Feb 2022. Multiple broken promises from Sanjay and Sunder. Escalated to Sanjay, Elwin, Galveen, Anu Vinayak. Extremely high reputational and legal risk.',source:'accounts.ap@'},
+{id:10,vendor:'Suburban Diagnostics (Dr. Lal Pathlabs)',type:'Diagnostics partner — lab services',amount:'₹49,68,592',amountSub:'Per vendor ledger; reco dispute with CNH books',urgency:'critical',first:'Jul 2025',last:'Aug 2025',revert:false,revertNote:'No CNH response. Sahil Rane (Territory Manager) escalating weekly to Rupa Singh, Yash, Jaykishan. 10+ reminder emails.',risk:'Sales team explicitly threatening to stop support. Reconciliation dispute — vendor shows ₹49.7L, CNH books differ. Partial payment of ₹11.7L received but balance unresolved. Vendor is part of listed entity (Dr. Lal Pathlabs) — reputational risk significant.',source:'anil@'},
+{id:11,vendor:'PeopleStrong Technologies',type:'HRMS platform dues',amount:'₹7,93,196',amountSub:'Due since Dec 2024',urgency:'high',first:'23 Oct 2025',last:'17 Jan 2026',revert:true,revertNote:'Sunder acknowledged liability in writing, requested 3-month extension. Extension expired ~Jan 2026. No payment.',risk:'MSME vendor — 2% p.m. interest threatened from original due date. Extension lapsed with no follow-through.',source:'legal@'},
+{id:12,vendor:'Apple Hospital, Indore (AIHRC)',type:'Provider — OPD & health checkups',amount:'₹1,80,102',amountSub:'Net of ₹6,453 TDS deposited',urgency:'critical',first:'Oct 2024',last:'9 Mar 2026',revert:true,revertNote:'Hemant Mishra repeatedly said payment file shared with treasury. No actual payment ever released.',risk:'Advocate legal notice served 9 Mar 2026. MSME — interest accruing since Oct 2024. Provider has stopped health checkups for CNH patients.',source:'legal@'},
+{id:13,vendor:'Bhailal Amin General Hospital',type:'Provider — OPD services (Vadodara)',amount:'Unquantified',amountSub:'Outstanding since Dec 2024',urgency:'high',first:'Mar 2026',last:'26 Mar 2026',revert:true,revertNote:'Sanjay replied 21 Mar allow a few days. Went silent. Same pattern repeating.',risk:'Multiple escalating reminders. Escalated directly to Sanjay. Threatening appropriate decision. Classic Sanjay commitment pattern — promise and vanish.',source:'accounts.ap@'},
+{id:14,vendor:'Dr. Vishal Singh (Orthopaedic Surgeon)',type:'Teleconsultation consultancy fees',amount:'6 months unpaid',amountSub:'Sep 2025–Feb 2026',urgency:'high',first:'5 Mar 2026',last:'16 Mar 2026',revert:false,revertNote:'No CNH response to Second and Final Notice. Addressed to Deepak Bhati.',risk:'Clause 37 arbitration threatened within 10 days of 16 Mar — window almost certainly lapsed. May have already filed. Agreement attached to notice email.',source:'accounts.ap@'},
+{id:15,vendor:'Mangal Compu Solutions',type:'Laptop rental — 9 invoices Apr–Dec 2025',amount:'₹99,180',amountSub:'9 months outstanding',urgency:'high',first:'Nov 2025',last:'12 Jan 2026',revert:true,revertNote:'Gautam Joshi responded on serial numbers only. Vendor sent physical rep to Khar office.',risk:'MSME vendor (UDYAM). 4+ formal escalating reminders. Calls to Sunder and Shubham unanswered.',source:'legal@'},
+{id:16,vendor:'Manch Technologies Pvt. Ltd.',type:'OPD manpower/attendance — 5 invoices',amount:'TBC from PDF attachments',amountSub:'5 invoices Oct 2024–Dec 2025',urgency:'high',first:'Oct 2025',last:'18 Mar 2026',revert:false,revertNote:'No CNH response across any inbox. Escalated to Sanjay, MVS, Vikrant Lele, Sparsh Jain, Komal.',risk:'15+ reminder emails in 6 months — weekly cadence. Invoice amounts in PDFs — need review. Escalated directly to Sanjay in Sep 2025 formal letter.',source:'accounts.ap@'},
+{id:17,vendor:'VV Incin Solutions (Biomedical Waste)',type:'BMW disposal — Bengaluru Siemens site',amount:'₹1,36,666',amountSub:'Outstanding from May 2023',urgency:'medium',first:'Mar 2025',last:'27 Mar 2026',revert:true,revertNote:'Shweta said payment file shared with treasury May 2025. Nothing moved.',risk:'KSPCB annual BMW reporting — non-payment may affect biomedical waste regulatory compliance filings.',source:'accounts.ap@'},
+{id:18,vendor:'Varad Ambulance Services (Pune)',type:'Ambulance services — Amazon MPNA site',amount:'Unquantified',amountSub:'Invoices 84, 95, 97 unpaid',urgency:'medium',first:'Jan 2026',last:'20 Feb 2026',revert:false,revertNote:'No CNH response. Escalated to Galveen and Sanjay directly.',risk:'Individual operator (Vishwjit Ghayal). Likely to file with transport/labour authority.',source:'accounts.ap@'},
+{id:19,vendor:'Techno India Dama Hospital',type:'Provider — OPD services (Kolkata)',amount:'~₹32,000',amountSub:'Reconciled payable ₹15,130',urgency:'medium',first:'Feb 2026',last:'31 Mar 2026',revert:true,revertNote:'Anil Kumar escalated to Sunder/MVS. No payment confirmed.',risk:'Regulatory guidelines language signals MSME complaints authority filing. Last email 31 Mar unanswered.',source:'legal@'},
+{id:20,vendor:'Dr. Gitanjali Monee (Gynaecologist)',type:'Doctor panel — online consultation fees',amount:'Unquantified',amountSub:'Unpaid since 27 Oct 2025',urgency:'medium',first:'Feb 2026',last:'11 Mar 2026',revert:true,revertNote:'Sanjay personally replied promising settlement soon. No payment followed.',risk:'Threatening legal recourse. Sanjay personal promise undelivered. Panel doctor calling out mismanagement in email.',source:'legal@'},
+{id:21,vendor:'Dr. Prachi Kulkarni',type:'Employee salary — Feb 2026',amount:'Feb 2026 salary',amountSub:'Unquantified',urgency:'high',first:'26 Mar 2026',last:'26 Mar 2026',revert:false,revertNote:'No CNH response. Addressed to Sanjay, Harshala, Vishal Patil.',risk:'Final legal notice 26 Mar. 48-hour ultimatum. Cites Payment of Wages Act 1936 and Shops & Establishments Act. Labour Commissioner filing threatened.',source:'accounts@'},
+{id:22,vendor:'Dr. Nishita Labaday (Physiotherapist)',type:'Employee salary — Jan + Feb 2026',amount:'~1–2 months salary',amountSub:'Unquantified',urgency:'medium',first:'1 Mar 2026',last:'1 Mar 2026',revert:false,revertNote:'No CNH response visible in any inbox.',risk:'Labour Commissioner complaint threatened. Code on Wages 2019 — penalty up to ₹50,000. Pattern of repeated salary delays cited.',source:'legal@'}
+];
+const sl={open:'Open','in-progress':'In progress',escalated:'Escalated',resolved:'Resolved'};
+const sc={open:'b-open','in-progress':'b-prog',escalated:'b-esc',resolved:'b-res'};
+const sa={open:'ao','in-progress':'ap',escalated:'ae',resolved:'ar'};
+const uc={critical:'b-crit',high:'b-high',medium:'b-med'};
+const ub={critical:'critical',high:'high',medium:'medium'};
+let cases,filter='all',openCards=new Set(),inputs={};
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'[]');return CASES.map(c=>{const x=s.find(y=>y.id===c.id);return x?{...c,status:x.status,updates:x.updates||[]}:{...c,status:'open',updates:[]};});}catch(e){return CASES.map(c=>({...c,status:'open',updates:[]}));}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cases.map(c=>({id:c.id,status:c.status,updates:c.updates}))));}catch(e){}}
+function metrics(){return{o:cases.filter(c=>c.status!=='resolved').length,c:cases.filter(c=>c.urgency==='critical'&&c.status!=='resolved').length,n:cases.filter(c=>!c.revert&&c.status!=='resolved').length,r:cases.filter(c=>c.status==='resolved').length};}
+function filtered(){if(filter==='all')return cases;if(filter==='no-revert')return cases.filter(c=>!c.revert&&c.status!=='resolved');if(filter==='resolved')return cases.filter(c=>c.status==='resolved');return cases.filter(c=>c.status===filter||c.urgency===filter);}
+function setFilter(f){filter=f;render();}
+function toggle(id){if(openCards.has(id))openCards.delete(id);else openCards.add(id);render();}
+function setStatus(id,s){cases=cases.map(c=>c.id===id?{...c,status:s}:c);save();render();}
+function addUpdate(id){const v=(inputs[id]||'').trim();if(!v)return;const d=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});cases=cases.map(c=>c.id===id?{...c,updates:[...c.updates,{date:d,text:v}]}:c);inputs[id]='';save();render();}
+function exportCSV(){const h=['ID','Vendor','Type','Amount','Urgency','Status','First Chase','Last Chase','CNH Revert','Source','Risk'];const r=cases.map(c=>[c.id,c.vendor,c.type,c.amount+(c.amountSub?' / '+c.amountSub:''),c.urgency,c.status,c.first,c.last,c.revert?'Yes':'No',c.source,c.risk].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));const csv=[h.join(','),...r].join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='CNH_Vendor_Dues_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
+function render(){
+  const m=metrics();const fc=filtered();
+  document.getElementById('metrics').innerHTML=`<div class="metric"><div class="metric-label">Open cases</div><div class="metric-value">${m.o}</div><div class="metric-sub">of ${cases.length} total</div></div><div class="metric"><div class="metric-label">Critical</div><div class="metric-value" style="color:#dc3545">${m.c}</div><div class="metric-sub">immediate action</div></div><div class="metric"><div class="metric-label">No CNH revert</div><div class="metric-value" style="color:#f59e0b">${m.n}</div><div class="metric-sub">unanswered</div></div><div class="metric"><div class="metric-label">Resolved</div><div class="metric-value" style="color:#22c55e">${m.r}</div><div class="metric-sub">closed</div></div>`;
+  const fd={all:'All',critical:'Critical',high:'High',medium:'Medium',open:'Open','in-progress':'In progress',escalated:'Escalated','no-revert':'No revert',resolved:'Resolved'};
+  document.getElementById('filters').innerHTML='<span class="filter-label">Filter:</span>'+Object.keys(fd).map(f=>`<button class="fb${filter===f?' active':''}" onclick="setFilter('${f}')">${fd[f]}</button>`).join('');
+  if(fc.length===0){document.getElementById('cases').innerHTML='<div class="empty">No cases match this filter.</div>';return;}
+  document.getElementById('cases').innerHTML=fc.map(c=>{
+    const exp=openCards.has(c.id);const bc=c.status==='resolved'?'resolved-card':(ub[c.urgency]||'');
+    return`<div class="card ${bc}"><div class="card-head" onclick="toggle(${c.id})"><div><div class="card-title">${c.vendor}</div><div class="badges"><span class="b ${sc[c.status]}">${sl[c.status]}</span><span class="b ${uc[c.urgency]}">${c.urgency}</span><span class="b b-type">${c.type}</span><span class="b b-src">${c.source}</span></div></div><div class="card-right"><div class="amount">${c.amount}</div>${c.amountSub?`<div class="amount-sub">${c.amountSub}</div>`:''}<span class="chevron">${exp?'▲':'▼'}</span></div></div><div class="card-body${exp?' open':''}"><div class="info-grid"><div class="info-field"><label>First chase</label><span>${c.first}</span></div><div class="info-field"><label>Last chase</label><span>${c.last}</span></div><div class="info-field"><label>CNH revert</label><span class="${c.revert?'yes':'no'}">${c.revert?'Yes':'No'}</span></div><div class="info-field"><label>Inbox</label><span>${c.source}</span></div></div><div class="info-field" style="margin-bottom:8px"><label>Revert note</label><span>${c.revertNote}</span></div><div class="risk-box">${c.risk}</div><div class="divider"></div><div class="status-row"><label>Status:</label>${['open','in-progress','escalated','resolved'].map(s=>`<button class="sb${c.status===s?' '+sa[s]:''}" onclick="setStatus(${c.id},'${s}')">${sl[s]}</button>`).join('')}</div><div class="divider"></div><div class="updates-section"><div class="updates-label">Updates &amp; closure notes</div>${c.updates.length===0?'<div style="font-size:11px;color:#bbb;padding:3px 0">No updates yet.</div>':''}${c.updates.map(u=>`<div class="update-item"><div class="update-date">${u.date}</div>${u.text}</div>`).join('')}<div class="add-row"><input type="text" placeholder="Add update or closure note..." id="inp-${c.id}" value="${(inputs[c.id]||'').replace(/"/g,'&quot;')}" oninput="inputs[${c.id}]=this.value" onkeydown="if(event.key==='Enter')addUpdate(${c.id})"><button class="save-btn" onclick="addUpdate(${c.id})">Save</button></div></div></div></div>`;
+  }).join('');
+}
+cases=load();render();
+</script>
+</body>
+</html>
